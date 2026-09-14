@@ -1,0 +1,442 @@
+<!--
+  Guaita Apps - Suite of standalone tools for architecture, BIM and documentation.
+  Copyright (c) 2026 Jordi Subirós
+  GNU Affero General Public License v3.0
+  See LICENSE file for details
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Help · guaitaIFCparser</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0A0E0A; --panel:#12160F; --panel-2:#191E12; --panel-3:#232A18;
+  --line:#333D1F; --line-soft:#28301A; --txt:#EAF3D8; --dim:#94A377; --dim-2:#5E6B47;
+  --accent:#C6FF00; --accent-ink:#0A0E00; --accent-2:#FF2ECC; --accent-3:#00E5FF; --accent-4:#FFE500;
+  --danger:#FF4D6D; --radius:8px;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Space Grotesk',system-ui,sans-serif;
+  background:var(--ink); color:var(--txt); line-height:1.6;
+  background-image:linear-gradient(rgba(198,255,0,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(198,255,0,.03) 1px,transparent 1px);
+  background-size:44px 44px;
+}
+.mono{font-family:'IBM Plex Mono',monospace;}
+a{color:var(--accent-3); text-decoration:none;}
+a:hover{color:var(--accent);}
+
+/* ---------- Layout ---------- */
+.wrap{max-width:1180px; margin:0 auto; padding:0 24px; display:grid; grid-template-columns:230px 1fr; gap:48px;}
+@media(max-width:860px){ .wrap{grid-template-columns:1fr; gap:0;} nav.toc{display:none;} }
+
+/* ---------- Hero ---------- */
+header.hero{
+  border-bottom:1px solid var(--line); background:var(--panel);
+  padding:56px 24px 44px; position:relative; overflow:hidden;
+}
+header.hero .inner{max-width:1180px; margin:0 auto;}
+.brand{display:flex; align-items:center; gap:14px; margin-bottom:22px;}
+.brand .cells{display:grid; grid-template-columns:repeat(2,13px); gap:4px;}
+.brand .cells span{width:13px; height:13px;}
+.brand .cells span:nth-child(1){background:var(--accent);}
+.brand .cells span:nth-child(2){background:var(--accent-2);}
+.brand .cells span:nth-child(3){background:var(--accent-3);}
+.brand .cells span:nth-child(4){background:var(--accent-4);}
+.brand .bt{font-weight:700; font-size:20px; letter-spacing:.16em;}
+.brand .bt small{color:var(--accent); font-size:12px; letter-spacing:.1em; margin-left:2px;}
+header.hero h1{
+  font-size:clamp(34px,6vw,60px); line-height:1.02; font-weight:700; letter-spacing:-.02em;
+  max-width:16ch;
+}
+header.hero h1 em{font-style:normal; color:var(--accent);}
+header.hero p.lead{margin-top:18px; font-size:17px; color:var(--dim); max-width:60ch;}
+.hero-tag{
+  display:inline-block; margin-bottom:10px; font-family:'IBM Plex Mono',monospace;
+  font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--accent-ink);
+  background:var(--accent); padding:4px 10px; border-radius:20px;
+}
+
+/* ---------- TOC ---------- */
+nav.toc{position:sticky; top:32px; align-self:start; padding-top:48px;}
+nav.toc .toc-t{font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim-2); margin-bottom:12px;}
+nav.toc ol{list-style:none; counter-reset:s;}
+nav.toc li{counter-increment:s; margin:2px 0;}
+nav.toc a{
+  display:flex; gap:10px; align-items:baseline; padding:6px 8px; border-radius:6px;
+  color:var(--dim); font-size:13.5px; border-left:2px solid transparent;
+}
+nav.toc a::before{content:counter(s,decimal-leading-zero); font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--dim-2);}
+nav.toc a:hover{background:var(--panel-2); color:var(--txt);}
+nav.toc a.active{color:var(--accent); border-left-color:var(--accent); background:var(--panel-2);}
+
+/* ---------- Content ---------- */
+main{padding:48px 0 100px; min-width:0;}
+section{margin-bottom:56px; scroll-margin-top:24px;}
+section > h2{
+  font-size:12px; font-family:'IBM Plex Mono',monospace; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--accent); margin-bottom:6px;
+}
+section > h2 .num{color:var(--dim-2); margin-right:10px;}
+section > .st{font-size:27px; font-weight:600; letter-spacing:-.01em; margin-bottom:18px; line-height:1.15;}
+section p{margin-bottom:14px; color:var(--txt);}
+section p.muted{color:var(--dim);}
+h3{font-size:17px; font-weight:600; margin:26px 0 10px;}
+
+/* ---------- Callouts ---------- */
+.note{
+  border:1px solid var(--line); border-left:3px solid var(--accent-3);
+  background:var(--panel); border-radius:0 var(--radius) var(--radius) 0;
+  padding:14px 16px; margin:18px 0; font-size:14px;
+}
+.note.warn{border-left-color:var(--accent-4);}
+.note.stop{border-left-color:var(--danger);}
+.note .nt{font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--dim); margin-bottom:5px;}
+.note.warn .nt{color:var(--accent-4);}
+.note.stop .nt{color:var(--danger);}
+
+/* ---------- Steps ---------- */
+ol.steps{list-style:none; counter-reset:step; margin:8px 0;}
+ol.steps li{counter-increment:step; position:relative; padding:12px 0 12px 46px; border-bottom:1px solid var(--line-soft);}
+ol.steps li:last-child{border-bottom:none;}
+ol.steps li::before{
+  content:counter(step); position:absolute; left:0; top:11px;
+  width:30px; height:30px; border-radius:8px; background:var(--panel-3); color:var(--accent);
+  font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:13px;
+  display:flex; align-items:center; justify-content:center; border:1px solid var(--line);
+}
+ol.steps li b{color:var(--accent);}
+
+/* ---------- Feature cards ---------- */
+.cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(215px,1fr)); gap:14px; margin:10px 0;}
+.card{border:1px solid var(--line); background:var(--panel); border-radius:var(--radius); padding:16px;}
+.card .ci{width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center; margin-bottom:10px; background:var(--panel-3);}
+.card .ci svg{width:18px; height:18px; stroke:var(--accent); fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;}
+.card h4{font-size:15px; font-weight:600; margin-bottom:4px;}
+.card p{font-size:13px; color:var(--dim); margin:0;}
+.card:nth-child(4n+2) .ci svg{stroke:var(--accent-2);}
+.card:nth-child(4n+3) .ci svg{stroke:var(--accent-3);}
+.card:nth-child(4n+4) .ci svg{stroke:var(--accent-4);}
+
+/* ---------- Tables ---------- */
+table.tbl{width:100%; border-collapse:collapse; font-size:14px; margin:14px 0;}
+table.tbl th{text-align:left; padding:9px 12px; background:var(--panel-2); color:var(--dim); font-weight:500; font-size:12px; letter-spacing:.03em; text-transform:uppercase; border-bottom:1px solid var(--line);}
+table.tbl td{padding:9px 12px; border-bottom:1px solid var(--line-soft); vertical-align:top;}
+table.tbl tr:hover td{background:var(--panel);}
+kbd{
+  font-family:'IBM Plex Mono',monospace; font-size:12px; background:var(--panel-3);
+  border:1px solid var(--line); border-bottom-width:2px; border-radius:5px; padding:2px 8px; color:var(--accent); white-space:nowrap;
+}
+code{font-family:'IBM Plex Mono',monospace; font-size:.88em; background:var(--panel-2); border:1px solid var(--line-soft); padding:1px 6px; border-radius:4px; color:var(--accent-3);}
+
+/* ---------- Panel map ---------- */
+.map{border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; margin:16px 0; font-family:'IBM Plex Mono',monospace; font-size:11.5px;}
+.map .mrow{display:flex; border-bottom:1px solid var(--line-soft);}
+.map .mrow:last-child{border-bottom:none;}
+.map .mcell{padding:14px 12px; border-right:1px solid var(--line-soft); color:var(--dim);}
+.map .mcell:last-child{border-right:none;}
+.map .mcell b{display:block; color:var(--accent); font-family:'Space Grotesk',sans-serif; font-size:13px; margin-bottom:3px;}
+.map .l{flex:0 0 26%;} .map .c{flex:1;} .map .r{flex:0 0 24%;}
+.map .top,.map .bot{background:var(--panel-2); color:var(--accent-3); padding:10px 12px; text-align:center;}
+
+/* ---------- Details / FAQ ---------- */
+details{border:1px solid var(--line); border-radius:var(--radius); background:var(--panel); margin:8px 0; overflow:hidden;}
+details summary{padding:14px 16px; cursor:pointer; font-weight:500; list-style:none; display:flex; align-items:center; gap:10px;}
+details summary::-webkit-details-marker{display:none;}
+details summary::before{content:'+'; font-family:'IBM Plex Mono',monospace; color:var(--accent); font-size:16px;}
+details[open] summary::before{content:'-';}
+details .db{padding:0 16px 16px 42px; color:var(--dim); font-size:14px;}
+details[open] summary{color:var(--accent);}
+
+/* ---------- Footer ---------- */
+footer.foot{border-top:1px solid var(--line); padding:28px 24px 34px; text-align:center; color:var(--dim-2); font-size:12.5px;}
+footer.foot .fb{display:inline-flex; gap:8px; align-items:center; margin-bottom:8px;}
+footer.foot .fb .cells{display:grid; grid-template-columns:repeat(2,6px); gap:2px;}
+footer.foot .fb .cells span{width:6px; height:6px;}
+footer.foot .fb .cells span:nth-child(1){background:var(--accent);} footer.foot .fb .cells span:nth-child(2){background:var(--accent-2);}
+footer.foot .fb .cells span:nth-child(3){background:var(--accent-3);} footer.foot .fb .cells span:nth-child(4){background:var(--accent-4);}
+footer.foot .disclaimer{max-width:74ch; margin:12px auto 0; font-size:11px; line-height:1.6; color:var(--dim-2);}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="inner">
+    <div class="brand">
+      <span class="cells"><span></span><span></span><span></span><span></span></span>
+      <span class="bt">GUAITA<small>IFC PARSER</small></span>
+    </div>
+    <span class="hero-tag">User guide</span>
+    <h1>Compare IFC engines <em>side by side</em>.</h1>
+    <p class="lead">guaitaIFCparser opens an IFC file and displays it at the same time in up to four independent viewers. In each viewer you choose which <em>parser</em> reads it and which <em>renderer</em> draws it, and compare geometry, element count and processing time. Everything happens inside the browser, with the WASM engine embedded and nothing sent anywhere.</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="toc">
+    <div class="toc-t">Contents</div>
+    <ol>
+      <li><a href="#intro">What it is</a></li>
+      <li><a href="#obrir">Getting started</a></li>
+      <li><a href="#interficie">The interface</a></li>
+      <li><a href="#parsers">Parsers: what we compare</a></li>
+      <li><a href="#wasm">WASM engines</a></li>
+      <li><a href="#renderers">Renderers and modes</a></li>
+      <li><a href="#navegacio">Views and navigation</a></li>
+      <li><a href="#problemes">Troubleshooting</a></li>
+      <li><a href="#llicencies">Licenses and credits</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <section id="intro">
+      <h2><span class="num">01</span>What it is</h2>
+      <div class="st">guaitaIFCparser — multi-parser comparator</div>
+      <p>It's a standalone single-HTML-file tool for opening an <strong>IFC</strong> model and comparing, at the same time, how different <em>parsers</em> read it and how different <em>renderers</em> draw it. The window is split into 1, 2 or 4 viewers and each viewer can use a different combination, so you see the differences in geometry and performance at a glance.</p>
+      <div class="cards">
+        <div class="card"><div class="ci"><svg viewBox="0 0 24 24"><path d="M12 3l9 5v8l-9 5-9-5V8z"/><path d="M12 3v18M3 8l9 5 9-5"/></svg></div><h4>Multi-parser</h4><p>Reads the same IFC with four independent engines: web-ifc (WASM), Guaita's native STEP parser, BIMrocket (CSG) and ifc-lite (Rust/WASM), which also opens IFC5/IFCX.</p></div>
+        <div class="card"><div class="ci"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM4 10h16M10 10v10"/></svg></div><h4>Multi-renderer</h4><p>Draws each model with Three.js or with a raw WebGL2 engine using its own shaders, to see the rendering differences.</p></div>
+        <div class="card"><div class="ci"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div><h4>Up to 4 viewers</h4><p>Splits the window into 1, 2 or 4 panels and puts each parser/renderer combination in a different panel.</p></div>
+        <div class="card"><div class="ci"><svg viewBox="0 0 24 24"><path d="M4 4h11l5 5v11a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg></div><h4>Live metrics</h4><p>Each viewer shows schema, elements, meshes, vertices, processing time and filtered meshes, to compare performance and coverage.</p></div>
+      </div>
+      <div class="note"><div class="nt">Privacy</div>All processing happens on your computer, inside the browser. The four engines are embedded in the file (no CDN) and files are never sent anywhere.</div>
+    </section>
+
+    <section id="obrir">
+      <h2><span class="num">02</span>Getting started</h2>
+      <div class="st">Open your first IFC</div>
+      <ol class="steps">
+        <li>Open <code>guaitaIFCParser.html</code> with a modern browser (updated Chrome, Edge or Firefox). No installation or connection needed: the engine is already inside the file.</li>
+        <li>Click <b>Open IFC</b> and pick a <code>.ifc</code> or <code>.ifcx</code> file, or drag and drop it onto the window (the frame <b>Drop the IFC here</b> appears).</li>
+        <li>Before anything is processed, the <b>pre-load report</b> shows up, with the file's contents and a per-engine memory estimate: you choose how many viewers you want, which engine goes in each one and the orientation, then confirm or cancel. On confirming, the viewers process the model. The filename and size in MB appear at the top; in each panel, the status bar at the bottom shows the schema and the metrics.</li>
+      </ol>
+      <div class="note"><div class="nt">Out of the box</div>The viewers come preset with a different engine each — <b>web-ifc, native STEP, BIMrocket and ifc-lite</b> — and the pre-load report recommends how many to open based on the model's weight. This way you compare engines from the very first moment without locking up the browser.</div>
+    </section>
+
+    <section id="interficie">
+      <h2><span class="num">03</span>The interface</h2>
+      <div class="st">The window's areas</div>
+      <div class="map">
+        <div class="mrow top">Header — Open IFC · background color · category filter · 1 / 2 / 4 layout · Sync · Console</div>
+        <div class="mrow">
+          <div class="mcell l"><b>Viewer selectors</b>In each panel: parser → renderer, mode, projection, standard view and Z-up / Y-up orientation.</div>
+          <div class="mcell c"><b>3D area</b>The model as drawn, with the axis triad at the bottom left. Orbit, pan and zoom with the mouse directly over the canvas.</div>
+          <div class="mcell r"><b>Quick buttons</b>⤢ frame · ⟲ reset to opening view.</div>
+        </div>
+        <div class="mrow bot">Status bar — schema · elements · meshes · vertices · time · filtered meshes · warnings</div>
+      </div>
+      <p>The top bar is shared by all viewers. The controls you'll find there are:</p>
+      <table class="tbl">
+        <thead><tr><th>Control</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td><b>Open IFC</b></td><td>Loads a <code>.ifc</code> or <code>.ifcx</code> file from disk. You can also drag it onto the window. Before anything is processed, a <b>pre-load report</b> is shown.</td></tr>
+          <tr><td><b>Background color</b></td><td>Four color swatches for the viewers' background: Black, Technical blue, Dark gray and Light.</td></tr>
+          <tr><td><b>1 / 2 / 4</b></td><td>Number of viewers visible at once (one, two or four panels).</td></tr>
+          <tr><td><b>Category filter</b></td><td>Shows or hides <b>Grid, Annotations, Site, Openings and Spaces</b>. Applied equally to all engines, so the comparison stays fair. Only spaces are shown by default.</td></tr>
+          <tr><td><b>⟳ Sync</b></td><td>Locks the camera of all visible viewers so they move together.</td></tr>
+          <tr><td><b>Console</b></td><td>Real-time log with timestamps: scans, each engine's time, warnings and errors. Useful for diagnostics.</td></tr>
+        </tbody>
+      </table>
+      <p class="muted">Each panel has its own selector header and its own independent status bar, so you can have different combinations and metrics in each pane.</p>
+    </section>
+
+    <section id="parsers">
+      <h2><span class="num">04</span>Parsers</h2>
+      <div class="st">What we compare: the engine that reads the IFC</div>
+      <p>The <em>parser</em> is the component that reads the IFC file and extracts its geometry (triangle meshes with their colors and transforms). It's the <strong>first dropdown</strong> in each viewer's header. Switching it lets you see how the same model is interpreted by different engines.</p>
+      <p>All four deliver the result in a <strong>common normalized format</strong> — positions, normals, indices, matrix and color per mesh — so any parser can be paired with any renderer, and the comparison stays fair.</p>
+
+      <h3>web-ifc <span class="mono" style="color:var(--dim-2)">C++ → WebAssembly</span></h3>
+      <p>Engine from the ThatOpen project (formerly IFC.js), the de facto standard for web IFC viewers. Full geometric kernel: resolves extrusions, revolutions, B-reps, <b>boolean operations</b> and <code>IfcMappedItem</code>. Delivers already-tessellated geometry via <em>streaming</em>, with interleaved position and normal buffers, transform matrix and color per geometry. The WASM is embedded in the file (no CDN).</p>
+      <div class="note"><div class="nt">Role</div>The practical reference for comparison: fast and complete, but a black box — if it tessellates a piece wrong, you can't see why.</div>
+
+      <h3>Native STEP (Guaita) <span class="mono" style="color:var(--dim-2)">Pure JavaScript</span></h3>
+      <p>Written from scratch for this tool, with no dependencies or WASM. Tokenizes the STEP file's <code>DATA</code> section, builds an entity index and resolves placements (chains of <code>IfcLocalPlacement</code>, <code>IfcAxis2Placement3D/2D</code>). Covers <code>IfcExtrudedAreaSolid</code> with rectangular and arbitrary profiles, <code>IfcMappedItem</code>/<code>IfcRepresentationMap</code> with <code>IfcCartesianTransformationOperator3D</code>, and <code>IfcFacetedBrep</code>/<code>IfcClosedShell</code>. Triangulates by <em>ear-clipping</em> and generates flat normals per triangle.</p>
+      <div class="note"><div class="nt">Deliberate limits</div>Doesn't do booleans, voids, <em>half-spaces</em> or curves. That's why it gives much less geometry: it's the readable common minimum. The gap with the others tells you which part of the model depends on the geometric kernel.</div>
+
+      <h3>BIMrocket <span class="mono" style="color:var(--dim-2)">Pure JavaScript · CSG kernel</span></h3>
+      <p>Engine from the Ajuntament de Sant Feliu de Llobregat (Catalonia). Carries its own STEP tokenizer and, above all, a <b>geometric kernel with real CSG</b>: <code>Solid</code>, <code>Profile</code>, <code>Extruder</code>, <code>Revolver</code> and <code>BooleanOperator</code> classes, plus constructors for standard profiles (I, L, T, U, Z, circle…). Builds solids parametrically and then tessellates them.</p>
+      <p>It's the only one that also rebuilds the <b>full BIM tree</b>: each node carries its IFC class and the <code>IfcProject › IfcSite › IfcBuilding › IfcBuildingStorey › product</code> hierarchy. It breaks down each element into faces and edges as separate objects, hence the far higher mesh count. It's the one that best resolves the voids and booleans the native parser skips, at the cost of more geometry and time.</p>
+      <div class="note"><div class="nt">Visibility</div>BIMrocket internally marks part of what it generates as not visible (auxiliary representations, openings). The tool <b>respects this</b>: what the engine itself doesn't paint isn't drawn. The console reports how many nodes were skipped.</div>
+
+      <h3>ifc-lite <span class="mono" style="color:var(--dim-2)">Rust → WebAssembly</span></h3>
+      <p>Engine from LTplus AG, with an <b>exact-arithmetic</b> CSG kernel validated element by element against IfcOpenShell. The only one of the four that reads <b>IFC5/IFCX</b> in addition to IFC2X3, IFC4 and IFC4X3. It works through two separate pipelines depending on the file:</p>
+      <table class="tbl">
+        <thead><tr><th>Format</th><th>How it's processed</th></tr></thead>
+        <tbody>
+          <tr><td><b>IFC STEP</b> <code>.ifc</code></td><td>WASM compiled from Rust; geometry is extracted already tessellated and converted to the common format.</td></tr>
+          <tr><td><b>IFC5 / IFCX</b> <code>.ifcx</code></td><td>Pure <b>JavaScript component, no WASM</b>: composes the layered JSON graph (USD-style) and returns already-tessellated meshes with IFC class and colors with transparency.</td></tr>
+        </tbody>
+      </table>
+      <div class="note"><div class="nt">Vertical axis</div>ifc-lite exports in <b>Y-up</b> (USD convention). The tool automatically applies the rotation to Z-up so it lines up with the other three engines and the comparison can be overlaid.</div>
+
+      <h3>Why they diverge</h3>
+      <p>On the same test IFC (116 elements with geometry), the four engines give very different results. This divergence <em>is</em> the information you're looking for:</p>
+      <table class="tbl">
+        <thead><tr><th>Parser</th><th>Meshes</th><th>Vertices</th><th>Booleans and voids</th></tr></thead>
+        <tbody>
+          <tr><td><b>Native STEP</b></td><td>115</td><td>5,820</td><td>no</td></tr>
+          <tr><td><b>web-ifc</b></td><td>119</td><td>30,258</td><td>yes</td></tr>
+          <tr><td><b>ifc-lite</b></td><td>116</td><td>36,030</td><td>yes (exact)</td></tr>
+          <tr><td><b>BIMrocket</b></td><td>239</td><td>121,896</td><td>yes (CSG)</td></tr>
+        </tbody>
+      </table>
+      <p class="muted">When a piece looks right in one panel and wrong in another, the comparison tells you whether the problem lies in the IFC file or in that particular engine.</p>
+      <div class="note warn"><div class="nt">IFC5 / IFCX</div>If you load a <code>.ifcx</code>, only <b>ifc-lite</b> can read it: the tool automatically switches every viewer to this engine. If you force another one, the panel will tell you explicitly instead of failing silently.</div>
+      <div class="note"><div class="nt">Performance</div>Each parser processes the file only <b>once</b>: the result is cached in memory, so switching renderer doesn't re-parse the IFC. When an engine is no longer used by any viewer, its geometry is freed from memory.</div>
+    </section>
+
+    <section id="wasm">
+      <h2><span class="num">05</span>WebAssembly</h2>
+      <div class="st">What a WASM engine is and what it implies</div>
+      <p><strong>WebAssembly</strong> (WASM) is a binary instruction format that browsers know how to run. It's not meant to be written by hand, but as a <em>compilation target</em>: code written in C, C++ or Rust is compiled to it so it runs inside the browser at near-native speed.</p>
+      <p>The reason it exists is that JavaScript is good for logic and interface, but for intensive computation — tessellating geometry, solving boolean operations, processing B-reps — it's slower and less predictable. With WASM, a geometric kernel written in C++ or Rust that has existed for years can be ported to the browser with practically no rewriting.</p>
+
+      <h3>How it works</h3>
+      <p>The browser has a WASM virtual machine alongside the JavaScript engine. Each module lives inside its own <b>linear memory</b>: a contiguous block of bytes it can't escape. A WASM module has no access to the DOM, the GPU, or the disk. Everything it needs from the outside has to be provided by JavaScript, and everything it produces comes out through that same shared memory.</p>
+      <p>That's why, besides the binary, each engine carries an auto-generated JavaScript <em>glue</em> layer that initializes memory, translates calls and converts data between the two worlds.</p>
+
+      <h3>The tool's two WASM engines</h3>
+      <table class="tbl">
+        <thead><tr><th>Engine</th><th>Source language</th><th>Toolchain</th><th>Binary size</th></tr></thead>
+        <tbody>
+          <tr><td><b>web-ifc</b></td><td>C++</td><td>Emscripten</td><td>1.3 MB</td></tr>
+          <tr><td><b>ifc-lite</b></td><td>Rust</td><td>wasm-bindgen</td><td>3.7 MB</td></tr>
+        </tbody>
+      </table>
+      <p class="muted">The other two parsers — <b>native STEP</b> and <b>BIMrocket</b> — are pure JavaScript. So the tool's comparison isn't only about geometric coverage: it also contrasts two quite different execution strategies.</p>
+
+      <h3>Practical consequences</h3>
+      <table class="tbl">
+        <thead><tr><th>Effect</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td>APIs have an unusual shape</td><td>Functions like <code>GetVertexArray(pointer, size)</code> don't return a list: they receive an <b>address and a length</b> inside the module's linear memory, and JavaScript creates a view over it. For the same reason, geometry has to be freed explicitly: that memory isn't managed by JavaScript's garbage collector.</td></tr>
+          <tr><td>The app file is fairly heavy</td><td>The <code>.wasm</code> is an independent binary normally downloaded separately. Since the tool is a single file with no CDN, it's embedded in base64, which increases its size by 33%.</td></tr>
+          <tr><td>Bytes are injected, not downloaded</td><td>By default, these engines <em>download</em> the binary and compile it in <em>streaming</em>. Inside restricted-environment viewers (sandbox, CSP) that download is blocked, so the tool delivers the bytes already loaded in memory and avoids any network access.</td></tr>
+          <tr><td>Runs on a single thread</td><td>WASM supports threads, but they require <code>SharedArrayBuffer</code>, which in turn requires cross-origin isolation HTTP headers. A local file doesn't have those, so single-thread mode is forced.</td></tr>
+        </tbody>
+      </table>
+      <div class="note"><div class="nt">WASM doesn't always mean faster</div>Crossing the boundary between JavaScript and WASM has a cost, and so does copying large buffers. With small models, a pure-JavaScript parser can be faster. The processing time each viewer shows in the status bar lets you check this against real models.</div>
+      <div class="note"><div class="nt">Privacy</div>WASM modules run inside the browser's own sandbox: no access to disk or network. IFC files never leave the computer.</div>
+    </section>
+
+    <section id="renderers">
+      <h2><span class="num">06</span>Renderers</h2>
+      <div class="st">The engine that draws and the display modes</div>
+      <p>The <em>renderer</em> is what paints the geometry produced by the parser onto the screen. It's the viewer's <strong>second dropdown</strong> (after the → arrow). Parser and renderer are independent: any combination is valid, and both share the same camera.</p>
+      <h3>Three.js <span class="mono" style="color:var(--dim-2)">MIT · r160</span></h3>
+      <p>Full 3D library. Builds a scene with lighting (hemispheric + directional) and PBR materials, and has two cameras — perspective and orthographic — that switch depending on the chosen projection. Supports <b>all</b> display modes, since it generates derived geometry (wireframe and edges) for the line-based modes.</p>
+      <h3>Raw WebGL2 <span class="mono" style="color:var(--dim-2)">Own GLSL</span></h3>
+      <p>Direct implementation on top of WebGL2, with no library in between: GLSL <em>shaders</em> written for the tool (one vertex, one fragment), vertex array objects (VAO), interleaved position/normal buffers, and 32-bit indices. For wireframe mode it builds a line buffer from the triangles. Supports four modes.</p>
+      <p>Being low-level code, it's useful for seeing the geometry <b>with no intermediate layer</b>: what it draws is exactly what the parser delivered.</p>
+      <table class="tbl">
+        <thead><tr><th>Renderer</th><th>Modes</th><th>Projections</th></tr></thead>
+        <tbody>
+          <tr><td><b>Three.js</b></td><td>All seven</td><td>Perspective and orthographic</td></tr>
+          <tr><td><b>Raw WebGL2</b></td><td>Solid, Wireframe, Vertices, Normals</td><td>Perspective and orthographic</td></tr>
+        </tbody>
+      </table>
+      <div class="note"><div class="nt">If a panel fails</div>Renderer errors are never silent: if a <em>shader</em> fails to compile, the panel shows the driver's message and the GLSL code with the offending line marked; if the browser releases the GPU, the tool warns you and recovers on its own. Hovering over the renderer selector shows the real GPU and GLSL version.</div>
+      <h3>Display modes</h3>
+      <p>The third dropdown chooses how the model is drawn. The list adapts to the renderer: with raw WebGL2 only the first four are available.</p>
+      <table class="tbl">
+        <thead><tr><th>Mode</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td><b>Solid</b></td><td>Lit surfaces. This is the default mode.</td></tr>
+          <tr><td><b>Wireframe</b></td><td>The edges of every triangle.</td></tr>
+          <tr><td><b>Vertices</b></td><td>Point cloud of the mesh's vertices.</td></tr>
+          <tr><td><b>Normals</b></td><td>Color based on each face's normal direction.</td></tr>
+          <tr><td><b>Flat</b> <span class="mono" style="color:var(--dim-2)">(Three.js only)</span></td><td>Flat shading, no smoothing between faces.</td></tr>
+          <tr><td><b>Edges</b> <span class="mono" style="color:var(--dim-2)">(Three.js only)</span></td><td>Only marked edges (sharp-angle corners).</td></tr>
+          <tr><td><b>X-Ray</b> <span class="mono" style="color:var(--dim-2)">(Three.js only)</span></td><td>Semi-transparent model to see its interior.</td></tr>
+        </tbody>
+      </table>
+      <div class="note"><div class="nt">Background</div>The background color is chosen in the top bar and applies to all viewers at once.</div>
+    </section>
+
+    <section id="navegacio">
+      <h2><span class="num">07</span>Views and navigation</h2>
+      <div class="st">Moving the camera, projection and standard views</div>
+      <p>Each viewer is orbited directly with the mouse over the 3D area. There are no keyboard shortcuts: navigation is by mouse and by the panel header's selectors.</p>
+      <table class="tbl">
+        <thead><tr><th>Mouse</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td>Drag (left button)</td><td>Orbit around the model.</td></tr>
+          <tr><td><kbd>Shift</kbd> + drag &nbsp;·&nbsp; right button + drag</td><td>Pan the view.</td></tr>
+          <tr><td>Mouse wheel</td><td>Zoom in / out.</td></tr>
+        </tbody>
+      </table>
+      <h3>Viewer selectors and buttons</h3>
+      <table class="tbl">
+        <thead><tr><th>Control</th><th>Function</th></tr></thead>
+        <tbody>
+          <tr><td><b>Projection</b></td><td>Perspective (conic) or Axonom. (orthogonal).</td></tr>
+          <tr><td><b>View</b></td><td>Standard views: Iso, Top, Front, Back, Left, Right, Bottom.</td></tr>
+          <tr><td><kbd>⤢</kbd></td><td>Frames the model to the panel's current window.</td></tr>
+          <tr><td><kbd>⟲</kbd></td><td>Resets the camera to how it was when the model was opened.</td></tr>
+          <tr><td><b>Orientation</b></td><td><b>Z-up / Y-up</b> selector: manually choose which axis is vertical, depending on how the IFC was exported. Orbit rotation stays consistent with both options.</td></tr>
+        </tbody>
+      </table>
+      <div class="note"><div class="nt">Axis triad</div>At the bottom left of each viewer are the axes, which rotate with the camera: <b>X</b> in red, and the other two labels depend on orientation — with Z-up you see <b>X, Y, UP</b>; with Y-up, <b>X, Z, UP</b>. It lets you always know which way you're looking.</div>
+      <div class="note"><div class="nt">Syncing viewers</div>With <b>⟳ Sync</b> active, moving one viewer's camera moves all visible viewers' cameras at the same time. It's the way to see exactly the same view with different parsers or renderers. Click the button again to turn it off.</div>
+    </section>
+
+    <section id="problemes">
+      <h2><span class="num">08</span>Troubleshooting</h2>
+      <div class="st">Troubleshooting and frequently asked questions</div>
+      <details><summary>A panel shows up empty or with less geometry than another</summary><div class="db">That's exactly what you're comparing. The native STEP parser only covers a subset of explicit geometry (extrusions, faceted breps, mapped elements), while web-ifc, ifc-lite and BIMrocket resolve booleans and voids. Differences between panels are expected and useful: they show how far each engine goes.</div></details>
+      <details><summary>A panel says the IFCX format isn't supported</summary><div class="db"><code>.ifcx</code> (IFC5) files are only read by <b>ifc-lite</b>. When you load one, the tool automatically switches all viewers to this engine; if you force another one, the panel will tell you.</div></details>
+      <details><summary>Setting-out axes or topography are covering the model</summary><div class="db">Use the top bar's <b>category filter</b>: Grid, Annotations, Site and Openings are hidden by default. The status bar shows how many meshes were filtered and the breakdown by category.</div></details>
+      <details><summary>A heavy IFC uses too much memory</summary><div class="db">When you open the file, the <b>pre-load report</b> scans it without processing it and estimates vertices and RAM per engine, with a traffic-light indicator and a recommendation on how many viewers to open. You can adjust it or cancel before any engine is invoked. Reducing the number of viewers frees the memory of engines that are no longer used.</div></details>
+      <details><summary>You get "WebGL2 not available" or "renderer not available"</summary><div class="db">Your browser or hardware doesn't support WebGL2 at that moment. Switch that panel's renderer to Three.js in the second dropdown. The panel always shows the specific reason, and the <b>console</b> keeps a log of it.</div></details>
+      <details><summary>The model looks tipped over or with the vertical axis rotated</summary><div class="db">It depends on how the IFC was exported. Switch the panel's <b>orientation</b> selector to Z-up or Y-up and then press <kbd>⤢</kbd> to reframe. The viewer's axis triad confirms which axis is vertical.</div></details>
+      <details><summary>I want to go back to the initial view</summary><div class="db"><kbd>⟲</kbd> returns the camera to how it was right when the model was opened; <kbd>⤢</kbd> frames the model to the window's current size. For a specific view, use the views dropdown (Iso, Top, Front…).</div></details>
+      <details><summary>I switched renderer and don't want to wait for it to re-parse</summary><div class="db">No need: each parser's result is cached in memory per file. Switching renderer reuses the geometry already processed; it's only re-parsed if you change parser or load a new file.</div></details>
+    </section>
+    <section id="llicencies">
+      <h2><span class="num">09</span>Licenses</h2>
+      <div class="st">Component licenses and credits</div>
+      <p><b>guaitaIFCparser</b> is distributed under <strong>GNU AGPL-3.0-or-later</strong>. It incorporates third-party components under the following licenses, verified against the versions actually included in the file. The same table can be consulted inside the app, via the <b>licenses and credits</b> link in the footer.</p>
+      <table class="tbl">
+        <thead><tr><th>Component</th><th>Version</th><th>License</th><th>Holder</th></tr></thead>
+        <tbody>
+          <tr><td><b>guaitaIFCparser</b><br><span class="muted">app · native STEP parser · WebGL2 renderer</span></td><td>—</td><td>AGPL-3.0-or-later</td><td>© 2026 SBS BIM Consulting</td></tr>
+          <tr><td><b>web-ifc</b><br><span class="muted">parser · C++ → WASM</span></td><td>0.0.77</td><td>MPL-2.0</td><td>ThatOpen / web-ifc</td></tr>
+          <tr><td><b>BIMrocket</b><br><span class="muted">parser · CSG kernel in JS</span></td><td>—</td><td>EUPL-1.1+ <em>or</em> LGPLv3+</td><td>© 2021-2026 Ajuntament de Sant Feliu de Llobregat</td></tr>
+          <tr><td><b>ifc-lite</b><br><span class="muted">parser · Rust → WASM + IFCX in pure JS</span></td><td>@ifc-lite/wasm · /ifcx</td><td>MPL-2.0</td><td>LTplus AG</td></tr>
+          <tr><td><b>three.js</b><br><span class="muted">renderer</span></td><td>r160</td><td>MIT</td><td>© 2010-2023 three.js authors</td></tr>
+        </tbody>
+      </table>
+      <h3>Compatibility</h3>
+      <p>MIT and MPL-2.0 are compatible with AGPL-3.0. BIMrocket is <b>dual-licensed</b> and offers the <b>LGPLv3+</b> option, compatible with AGPL-3.0. The original third-party files' license headers are preserved, and the app's HTML file header contains the full notice.</p>
+      <h3>Source code</h3>
+      <p>The source code of the MPL-2.0 components (web-ifc, ifc-lite) is available in their respective public repositories. The tool's own code is published under AGPL-3.0 in the Guaita Apps repository.</p>
+      <div class="note warn"><div class="nt">Disclaimer</div>This information is indicative and does not constitute legal advice. If you redistribute the tool or incorporate it into another project, review the terms of each license.</div>
+    </section>
+  </main>
+</div>
+
+<footer class="foot">
+  <div class="fb"><span class="cells"><span></span><span></span><span></span><span></span></span> <b style="color:var(--txt); font-weight:600; letter-spacing:.1em;">GUAITA<small>IFC PARSER</small></b></div>
+  <div>Multi-parser and multi-renderer IFC comparator · SBS BIM Consulting 2026</div>
+  <p class="disclaimer">Guaita Apps is distributed "as is", with no warranty. The tools are designed from research and as technical and educational support; verification of results and any liability arising from their use rest solely with the end user.</p>
+</footer>
+
+<script>
+// Highlight the active section in the index
+const links=[...document.querySelectorAll('nav.toc a')];
+const map=new Map(links.map(a=>[a.getAttribute('href').slice(1),a]));
+const obs=new IntersectionObserver(es=>{
+  es.forEach(e=>{ if(e.isIntersecting){ links.forEach(l=>l.classList.remove('active')); const a=map.get(e.target.id); if(a)a.classList.add('active'); } });
+},{rootMargin:'-20% 0px -70% 0px'});
+document.querySelectorAll('main section').forEach(s=>obs.observe(s));
+</script>
+</body>
+</html>
